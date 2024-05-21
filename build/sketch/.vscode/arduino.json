@@ -1,0 +1,8 @@
+#line 1 "/Users/konstantin/ArduinoProjects/BMWProject/.vscode/arduino.json"
+{
+    "sketch": "BMWProject.ino",
+    "output": "build",
+    "port": "/dev/tty.usbserial-14440",
+    "configuration": "cpu=atmega2560",
+    "board": "arduino:avr:mega"
+}

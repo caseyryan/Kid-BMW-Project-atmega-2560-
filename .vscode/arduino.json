@@ -1,0 +1,7 @@
+{
+    "sketch": "BMWProject.ino",
+    "output": "build",
+    "port": "/dev/tty.usbserial-14440",
+    "configuration": "cpu=atmega2560",
+    "board": "arduino:avr:mega"
+}

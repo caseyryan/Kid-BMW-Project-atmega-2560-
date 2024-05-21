@@ -1,0 +1,17 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "/Users/konstantin/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "/Users/konstantin/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/mega"
+  },
+  {
+    "Sourcefile": "/Users/konstantin/ArduinoProjects/BMWProject/build/sketch/BMWProject.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  }
+]
