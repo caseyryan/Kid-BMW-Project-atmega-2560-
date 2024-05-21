@@ -14,6 +14,7 @@
 #define HEAD_LIGHTS A2
 #define SPEAKER 20
 #define EMERGENCY_INPUT A15
+// #define EMERGENCY_INPUT 39
 
 #define ONBOARD_LED 13
 
@@ -26,37 +27,37 @@ bool emergencyLightsOn = false;
 int lightState = 0;
 char lightsPinState = LOW;
 
-#line 27 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 28 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void setup();
-#line 44 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 45 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void loop();
-#line 56 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 55 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void processEmergencyLights();
-#line 64 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 63 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void processParkingLights();
-#line 68 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 67 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void setOnboardLed(char value);
-#line 75 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 74 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void processHallSensor();
-#line 103 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 100 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void processLights();
-#line 129 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 126 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void turnOnLights();
-#line 136 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 133 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void turnOffLights();
-#line 144 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 140 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void turnOnLeftIndicator();
-#line 154 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 149 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void turnOnRightIndicator();
-#line 164 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 158 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void processTurnLights();
-#line 187 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 179 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void processSpeaker(char state);
-#line 202 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 194 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void loopIndicatorBlinking();
-#line 255 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 235 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void resetTurnIndicators();
-#line 27 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+#line 28 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
 void setup()
 {
     pinMode(TURN_INDICATOR_PIN_INPUT, INPUT);
@@ -76,8 +77,6 @@ void setup()
 int brightness = 0;
 void loop()
 {
-    // digitalWrite(HEAD_LIGHTS, LOW);
-    // return;
     processTurnLights();
     processLights();
     processHallSensor();
@@ -89,7 +88,7 @@ void loop()
 void processEmergencyLights()
 {
     int value = analogRead(EMERGENCY_INPUT);
-    emergencyLightsOn = value >= 600;
+    emergencyLightsOn = value >= 300;
     // Serial.print("EMERGENCY: ");
     // Serial.println(value);
 }
@@ -108,9 +107,7 @@ bool isWaitingForSteering = false;
 void processHallSensor()
 {
     int value = analogRead(HALL_SENSOR);
-    // if (!isHallCentered)
-    // {
-    /// отслеживание нужно начинать после того, как датчик холла хоть раз
+    // отслеживание нужно начинать после того, как датчик холла хоть раз
     // встал в начальное положение
     isHallCentered = value <= 300 || value >= 700;
     if (isHallCentered && isWaitingForSteering)
@@ -161,14 +158,13 @@ void processLights()
 
 void turnOnLights()
 {
-    // Serial.println("LIGHTS ON");
+    Serial.println('turn off');
     lightsPinState = HIGH;
     setOnboardLed(lightsPinState);
 }
 
 void turnOffLights()
 {
-    // Serial.println("LIGHTS OFF");
     lightState = 0;
     lightsPinState = LOW;
     setOnboardLed(lightsPinState);
@@ -180,7 +176,6 @@ void turnOnLeftIndicator()
     {
         resetTurnIndicators();
         turnIndicator = -1;
-        Serial.println("TURN ON LEFT INDICATOR");
     }
 }
 
@@ -190,19 +185,14 @@ void turnOnRightIndicator()
     {
         resetTurnIndicators();
         turnIndicator = 1;
-        Serial.println("TURN ON RIGHT INDICATOR");
     }
 }
 
 void processTurnLights()
 {
     int value = analogRead(TURN_INDICATOR_PIN_INPUT);
-    // Serial.print("TURN PIN VALUE: ");
-    // Serial.println(value);
-
     if (value < 300)
     {
-        // Serial.println("TURN LEFT INDICATOR ON");
         turnOnLeftIndicator();
     }
     else if (value > 700)
@@ -211,9 +201,11 @@ void processTurnLights()
         turnOnRightIndicator();
     }
 
-    if (turnIndicator != 0)
+    if (turnIndicator != 0 || emergencyLightsOn)
     {
         loopIndicatorBlinking();
+    } else {
+        resetTurnIndicators();
     }
 }
 
@@ -221,7 +213,7 @@ void processSpeaker(char state)
 {
     if (state == HIGH)
     {
-        tone(SPEAKER, 700);
+        tone(SPEAKER, 500);
     }
     else
     {
@@ -262,23 +254,11 @@ void loopIndicatorBlinking()
 
         else if (turnIndicator == -1)
         {
-            // Serial.print("LEFT LIGHT: ");
-            // Serial.print(turnPinState);
-            // Serial.println("");
-
             digitalWrite(LEFT_INDICATOR, turnPinState);
             digitalWrite(RIGHT_INDICATOR, LOW);
         }
         else if (turnIndicator == 1)
         {
-            // Serial.print("RIGHT LIGHT: ");
-            // Serial.print(turnPinState);
-            // Serial.println("");
-            // curBlinkNumber++;
-            // if (curBlinkNumber % (MAX_BLINKS * 2) == 0)
-            // {
-            //     resetTurnIndicators();
-            // }
             digitalWrite(RIGHT_INDICATOR, turnPinState);
             digitalWrite(LEFT_INDICATOR, LOW);
         }
@@ -287,7 +267,6 @@ void loopIndicatorBlinking()
 
 void resetTurnIndicators()
 {
-    Serial.println("TURN OFF INDICATORS");
     isWaitingForSteering = false;
     isHallCentered = false;
     digitalWrite(RIGHT_INDICATOR, LOW);

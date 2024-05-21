@@ -12,6 +12,7 @@
 #define HEAD_LIGHTS A2
 #define SPEAKER 20
 #define EMERGENCY_INPUT A15
+// #define EMERGENCY_INPUT 39
 
 #define ONBOARD_LED 13
 
@@ -54,7 +55,7 @@ void loop()
 void processEmergencyLights()
 {
     int value = analogRead(EMERGENCY_INPUT);
-    emergencyLightsOn = value >= 600;
+    emergencyLightsOn = value >= 300;
     // Serial.print("EMERGENCY: ");
     // Serial.println(value);
 }
@@ -124,6 +125,7 @@ void processLights()
 
 void turnOnLights()
 {
+    Serial.println('turn off');
     lightsPinState = HIGH;
     setOnboardLed(lightsPinState);
 }
@@ -166,9 +168,13 @@ void processTurnLights()
         turnOnRightIndicator();
     }
 
-    if (turnIndicator != 0)
+    if (turnIndicator != 0 || emergencyLightsOn)
     {
         loopIndicatorBlinking();
+    }
+    else
+    {
+        resetTurnIndicators();
     }
 }
 
@@ -176,7 +182,7 @@ void processSpeaker(char state)
 {
     if (state == HIGH)
     {
-        tone(SPEAKER, 700);
+        tone(SPEAKER, 500);
     }
     else
     {

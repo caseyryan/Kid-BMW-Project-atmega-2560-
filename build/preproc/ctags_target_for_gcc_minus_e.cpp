@@ -8,7 +8,15 @@
 
 
 /// цифровые пины для поворотников
-# 18 "/Users/konstantin/ArduinoProjects/BMWProject/BMWProject.ino"
+
+
+
+
+
+// #define EMERGENCY_INPUT 39
+
+
+
 int turnIndicator = 0; // -1 left, 1 right
 int turnLightSkipSteps = 7;
 int parkingLightBrightness = 0;
@@ -37,8 +45,6 @@ void setup()
 int brightness = 0;
 void loop()
 {
-    // digitalWrite(HEAD_LIGHTS, LOW);
-    // return;
     processTurnLights();
     processLights();
     processHallSensor();
@@ -50,7 +56,7 @@ void loop()
 void processEmergencyLights()
 {
     int value = analogRead(A15);
-    emergencyLightsOn = value >= 600;
+    emergencyLightsOn = value >= 300;
     // Serial.print("EMERGENCY: ");
     // Serial.println(value);
 }
@@ -69,9 +75,7 @@ bool isWaitingForSteering = false;
 void processHallSensor()
 {
     int value = analogRead(A1);
-    // if (!isHallCentered)
-    // {
-    /// отслеживание нужно начинать после того, как датчик холла хоть раз
+    // отслеживание нужно начинать после того, как датчик холла хоть раз
     // встал в начальное положение
     isHallCentered = value <= 300 || value >= 700;
     if (isHallCentered && isWaitingForSteering)
@@ -122,14 +126,13 @@ void processLights()
 
 void turnOnLights()
 {
-    // Serial.println("LIGHTS ON");
+    Serial.println('turn off');
     lightsPinState = 0x1;
     setOnboardLed(lightsPinState);
 }
 
 void turnOffLights()
 {
-    // Serial.println("LIGHTS OFF");
     lightState = 0;
     lightsPinState = 0x0;
     setOnboardLed(lightsPinState);
@@ -141,7 +144,6 @@ void turnOnLeftIndicator()
     {
         resetTurnIndicators();
         turnIndicator = -1;
-        Serial.println("TURN ON LEFT INDICATOR");
     }
 }
 
@@ -151,19 +153,14 @@ void turnOnRightIndicator()
     {
         resetTurnIndicators();
         turnIndicator = 1;
-        Serial.println("TURN ON RIGHT INDICATOR");
     }
 }
 
 void processTurnLights()
 {
     int value = analogRead(A11);
-    // Serial.print("TURN PIN VALUE: ");
-    // Serial.println(value);
-
     if (value < 300)
     {
-        // Serial.println("TURN LEFT INDICATOR ON");
         turnOnLeftIndicator();
     }
     else if (value > 700)
@@ -172,9 +169,11 @@ void processTurnLights()
         turnOnRightIndicator();
     }
 
-    if (turnIndicator != 0)
+    if (turnIndicator != 0 || emergencyLightsOn)
     {
         loopIndicatorBlinking();
+    } else {
+        resetTurnIndicators();
     }
 }
 
@@ -182,7 +181,7 @@ void processSpeaker(char state)
 {
     if (state == 0x1)
     {
-        tone(20, 700);
+        tone(20, 500);
     }
     else
     {
@@ -223,23 +222,11 @@ void loopIndicatorBlinking()
 
         else if (turnIndicator == -1)
         {
-            // Serial.print("LEFT LIGHT: ");
-            // Serial.print(turnPinState);
-            // Serial.println("");
-
             digitalWrite(35, turnPinState);
             digitalWrite(37, 0x0);
         }
         else if (turnIndicator == 1)
         {
-            // Serial.print("RIGHT LIGHT: ");
-            // Serial.print(turnPinState);
-            // Serial.println("");
-            // curBlinkNumber++;
-            // if (curBlinkNumber % (MAX_BLINKS * 2) == 0)
-            // {
-            //     resetTurnIndicators();
-            // }
             digitalWrite(37, turnPinState);
             digitalWrite(35, 0x0);
         }
@@ -248,7 +235,6 @@ void loopIndicatorBlinking()
 
 void resetTurnIndicators()
 {
-    Serial.println("TURN OFF INDICATORS");
     isWaitingForSteering = false;
     isHallCentered = false;
     digitalWrite(37, 0x0);
